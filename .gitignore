@@ -1,0 +1,86 @@
+# =====================
+# Java
+# =====================
+
+*.class
+*.jar
+*.war
+*.ear
+
+target/
+build/
+
+# =====================
+# IDE files
+# =====================
+
+.idea/
+.vscode/
+
+*.iml
+
+# =====================
+# OS files
+# =====================
+
+.DS_Store
+Thumbs.db
+
+# =====================
+# Logs
+# =====================
+
+logs/
+*.log
+
+# =====================
+# Environment files
+# =====================
+
+.env
+.env.*
+
+# =====================
+# Terraform
+# =====================
+
+.terraform/
+
+*.tfstate
+*.tfstate.*
+
+terraform.tfvars
+
+crash.log
+
+override.tf
+override.tf.json
+
+*_override.tf
+*_override.tf.json
+
+# =====================
+# Jenkins
+# =====================
+
+jenkins_home/
+
+# =====================
+# Secrets
+# =====================
+
+*.pem
+*.key
+*.p12
+*.crt
+
+credentials.json
+
+service-account.json
+
+# =====================
+# Temporary files
+# =====================
+
+tmp/
+temp/
