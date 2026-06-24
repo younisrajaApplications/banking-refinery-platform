@@ -23,3 +23,20 @@
 - [ADR-001](docs/decisions/ADR-001.md)
 - [ADR-002 Repository Structure](docs/decisions/ADR-002-repository-structure.md)
 - [Raw Transaction Schema](data/schemas/transactions_raw_schema.md)
+
+## Application Services
+
+### Java Ingestion Service
+
+Location:
+
+`app/java-ingestion-service`
+
+Purpose:
+
+The Java Ingestion Service receives raw banking transaction data, validates records and prepares accepted and rejected outputs for the wider data refinery platform.
+
+Current endpoints:
+
+- `/health`
+- `/actuator/health`
