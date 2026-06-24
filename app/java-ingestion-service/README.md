@@ -13,6 +13,11 @@ This service is responsible for receiving raw banking transaction data, validati
 
 ## Run Locally
 
-```PowerShell/bash
-.\mvnw.cmd spring-boot:run
+### Bash
+```bash
 mvn spring-boot:run
+```
+### PowerShell
+```bash
+.\mvnw.cmd spring-boot:run
+```
