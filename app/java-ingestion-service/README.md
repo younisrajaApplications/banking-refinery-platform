@@ -61,3 +61,18 @@ The service currently checks:
   "status": "APPROVED",
   "riskScore": 20
 }
+
+## CSV Upload Endpoint
+
+### Endpoint
+
+`POST /transactions/upload`
+
+### Purpose
+
+Accepts a CSV file containing transaction records, validates each row and returns an ingestion summary.
+
+### Expected CSV Headers
+
+```text
+transaction_id,customer_id,account_id,transaction_timestamp,merchant_id,merchant_category,amount,currency,country,status,risk_score

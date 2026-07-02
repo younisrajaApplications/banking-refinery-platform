@@ -1,5 +1,6 @@
 package com.younis.refinery.ingestion.controller;
 
+import com.younis.refinery.ingestion.service.CsvTransactionIngestionService;
 import com.younis.refinery.ingestion.service.TransactionValidationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class TransactionControllerTest {
 
     @MockitoBean
     private TransactionValidationService transactionValidationService;
+
+    @MockitoBean
+    private CsvTransactionIngestionService csvTransactionIngestionService;
 
     @Test
     void shouldReturnValidResponseForValidTransaction() throws Exception {
@@ -74,4 +78,6 @@ public class TransactionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation failed"));
     }
+
+
 }
