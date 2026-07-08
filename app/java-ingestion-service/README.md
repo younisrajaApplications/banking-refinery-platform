@@ -61,6 +61,7 @@ The service currently checks:
   "status": "APPROVED",
   "riskScore": 20
 }
+```
 
 ## CSV Upload Endpoint
 
@@ -76,3 +77,31 @@ Accepts a CSV file containing transaction records, validates each row and return
 
 ```text
 transaction_id,customer_id,account_id,transaction_timestamp,merchant_id,merchant_category,amount,currency,country,status,risk_score
+```
+
+## Accepted and Rejected Outputs
+
+When a CSV file is uploaded, the service now creates two output files:
+
+- accepted transactions
+- rejected transactions
+
+Accepted records are written to:
+
+`data/processed/accepted/`
+
+Rejected records are written to:
+
+`data/processed/rejected/`
+
+The rejected output includes:
+
+- row number
+- transaction ID
+- rejection reason
+
+These files are generated outputs and are ignored by Git.
+
+## Why This Matters
+
+The service does not only validate data. It also produces auditable outputs that can be used by downstream warehouse loading and investigation processes.
