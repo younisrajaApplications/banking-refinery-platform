@@ -3,18 +3,26 @@ package com.younis.refinery.ingestion.service;
 import com.younis.refinery.ingestion.dto.CsvUploadResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CsvTransactionIngestionServiceTest {
+
+    @TempDir
+    Path tempDir;
 
     private CsvTransactionIngestionService csvTransactionIngestionService;
 
     @BeforeEach
     void setUp() {
         TransactionValidationService transactionValidationService = new TransactionValidationService();
-        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService);
+        CsvTransactionOutputWriter outputWriter = new CsvTransactionOutputWriter(tempDir.toString());
+        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService, outputWriter);
     }
 
     @Test
@@ -39,6 +47,10 @@ public class CsvTransactionIngestionServiceTest {
         assertEquals(3, response.getTotalRows());
         assertEquals(2, response.getAcceptedRows());
         assertEquals(1, response.getRejectedRows());
+        assertEquals("TXN-1003", response.getRejectedRecords().getFirst().getTransactionId());
         assertEquals("Unsupported currency: ABC", response.getRejectedRecords().getFirst().getReason());
+
+        assertTrue(response.getAcceptedOutputPath().contains("accepted_transactions_"));
+        assertTrue(response.getRejectedOutputPath().contains("rejected_transactions_"));
     }
 }

@@ -1,5 +1,6 @@
 package com.younis.refinery.ingestion.service;
 
+import com.younis.refinery.ingestion.dto.RejectedRecordResponse;
 import com.younis.refinery.ingestion.dto.TransactionRequest;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -85,19 +86,60 @@ public class CsvTransactionOutputWriter {
         ) {
             for (TransactionRequest transaction : acceptedTransactions) {
                 csvPrinter.printRecord(
-                        transaction.getTransactionId(),
-                        transaction.getCustomerId(),
-                        transaction.getAccountId(),
-                        transaction.getTransactionTimestamp(),
-                        transaction.getMerchantId(),
-                        transaction.getMerchantCategory(),
-                        formatAmount(transaction.getAmount()),
-                        transaction.getCurrency(),
-                        transaction.getCountry(),
-                        transaction.getStatus(),
-                        transaction.getRiskScore()
+                    transaction.getTransactionId(),
+                    transaction.getCustomerId(),
+                    transaction.getAccountId(),
+                    transaction.getTransactionTimestamp(),
+                    transaction.getMerchantId(),
+                    transaction.getMerchantCategory(),
+                    formatAmount(transaction.getAmount()),
+                    transaction.getCurrency(),
+                    transaction.getCountry(),
+                    transaction.getStatus(),
+                    transaction.getRiskScore()
                 );
             }
         }
     }
+
+    private void writeRejectedTransactions(
+        Path outputPath,
+        List<RejectedTransactionRecord> rejectedTransactions) throws Exception {
+            try (
+                BufferedWriter writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8);
+                CSVPrinter csvPrinter = new CSVPrinter(
+                    writer,
+                    CSVFormat.DEFAULT.builder()
+                            .setHeader(
+                                "row_number",
+                                "transaction_id",
+                                "rejection_reason"
+                            )
+                            .build()
+                )
+            ) {
+                for (RejectedTransactionRecord rejectedTransaction : rejectedTransactions) {
+                    csvPrinter.printRecord(
+                            rejectedTransaction.rowNumber(),
+                            rejectedTransaction.transactionId(),
+                            rejectedTransaction.reason()
+                    );
+                }
+            }
+    }
+
+    private String formatAmount(BigDecimal amount) {
+        return amount == null ? null : amount.toPlainString();
+    }
+
+    public record RejectedTransactionRecord(
+        long rowNumber,
+        String transactionId,
+        String reason
+    ) {}
+
+    public record OutputFiles (
+            String acceptedOutputPath,
+            String rejectedOutputPath
+    ) {}
 }

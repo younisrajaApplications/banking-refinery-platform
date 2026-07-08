@@ -3,6 +3,8 @@ package com.younis.refinery.ingestion.service;
 import com.younis.refinery.ingestion.dto.CsvUploadResponse;
 import com.younis.refinery.ingestion.dto.RejectedRecordResponse;
 import com.younis.refinery.ingestion.dto.TransactionRequest;
+import com.younis.refinery.ingestion.service.CsvTransactionOutputWriter.OutputFiles;
+import com.younis.refinery.ingestion.service.CsvTransactionOutputWriter.RejectedTransactionRecord;
 import org.springframework.stereotype.Service;
 // New Imports
 import org.springframework.web.multipart.MultipartFile;
@@ -22,16 +24,20 @@ import java.util.List;
 public class CsvTransactionIngestionService {
 
     private final TransactionValidationService transactionValidationService;
+    private final CsvTransactionOutputWriter csvTransactionOutputWriter;
 
-    public CsvTransactionIngestionService(TransactionValidationService transactionValidationService) {
+    public CsvTransactionIngestionService(TransactionValidationService transactionValidationService, CsvTransactionOutputWriter csvTransactionOutputWriter) {
         this.transactionValidationService = transactionValidationService;
+        this.csvTransactionOutputWriter = csvTransactionOutputWriter;
     }
 
     public CsvUploadResponse processFile(MultipartFile file) {
         validateFile(file);
 
         long totalRows = 0;
-        long acceptedRows = 0;
+
+        List<TransactionRequest> acceptedTransactions = new ArrayList<>();
+        List<CsvTransactionOutputWriter.RejectedTransactionRecord> rejectedTransactions = new ArrayList<>();
         List<RejectedRecordResponse> rejectedRecords = new ArrayList<>();
 
         CSVFormat csvFormat = CSVFormat.DEFAULT.builder() //.builder allows me to set how the csv should be handled
@@ -50,14 +56,18 @@ public class CsvTransactionIngestionService {
                try {
                    TransactionRequest transaction = mapCsvRecordToTransactionRequest(record);
                    transactionValidationService.validateBusinessRules(transaction);
-                   acceptedRows++;
+                   acceptedTransactions.add(transaction);
                } catch (Exception exception) {
+                   long rowNumber = record.getRecordNumber() + 1;
+                   String transactionId = getTransactionIdSafely(record);
+                   String reason = exception.getMessage();
+
+                   rejectedTransactions.add(
+                       new RejectedTransactionRecord(rowNumber, transactionId, reason)
+                   );
+
                    rejectedRecords.add(
-                       new RejectedRecordResponse(
-                               record.getRecordNumber() + 1,
-                               getTransactionIdSafely(record),
-                               exception.getMessage()
-                       )
+                       new RejectedRecordResponse(rowNumber, transactionId, reason)
                    );
                }
            }
@@ -65,11 +75,18 @@ public class CsvTransactionIngestionService {
             throw new IllegalArgumentException("Failed to process CSV file: " + exception.getMessage());
         }
 
+        OutputFiles outputFiles = csvTransactionOutputWriter.writeOutputs(
+            acceptedTransactions,
+            rejectedTransactions
+        );
+
         return new CsvUploadResponse(
                 file.getOriginalFilename(),
                 totalRows,
-                acceptedRows,
-                rejectedRecords.size(),
+                acceptedTransactions.size(),
+                rejectedTransactions.size(),
+                outputFiles.acceptedOutputPath(),
+                outputFiles.rejectedOutputPath(),
                 rejectedRecords
         );
     }
