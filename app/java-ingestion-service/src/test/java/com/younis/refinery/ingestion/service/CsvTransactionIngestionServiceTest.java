@@ -1,11 +1,13 @@
 package com.younis.refinery.ingestion.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.younis.refinery.ingestion.dto.CsvUploadResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +24,8 @@ public class CsvTransactionIngestionServiceTest {
     void setUp() {
         TransactionValidationService transactionValidationService = new TransactionValidationService();
         CsvTransactionOutputWriter outputWriter = new CsvTransactionOutputWriter(tempDir.toString());
-        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService, outputWriter);
+        ReconciliationReportWriter reconciliationReportWriter = new ReconciliationReportWriter(tempDir.toString(), new ObjectMapper());
+        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService, outputWriter, reconciliationReportWriter);
     }
 
     @Test
@@ -47,10 +50,22 @@ public class CsvTransactionIngestionServiceTest {
         assertEquals(3, response.getTotalRows());
         assertEquals(2, response.getAcceptedRows());
         assertEquals(1, response.getRejectedRows());
+
+        assertTrue(response.isReconciled());
+        assertEquals("COMPLETED_WITH_REJECTIONS", response.getProcessingStatus());
+
         assertEquals("TXN-1003", response.getRejectedRecords().getFirst().getTransactionId());
         assertEquals("Unsupported currency: ABC", response.getRejectedRecords().getFirst().getReason());
 
         assertTrue(response.getAcceptedOutputPath().contains("accepted_transactions_"));
         assertTrue(response.getRejectedOutputPath().contains("rejected_transactions_"));
+
+        System.out.println(response.getReconciliationReportPath());
+
+        assertTrue(response.getReconciliationReportPath().contains("reconciliation_report_"));
+
+        assertTrue(Files.exists(Path.of(response.getAcceptedOutputPath())));
+        assertTrue(Files.exists(Path.of(response.getRejectedOutputPath())));
+        assertTrue(Files.exists(Path.of(response.getReconciliationReportPath())));
     }
 }
