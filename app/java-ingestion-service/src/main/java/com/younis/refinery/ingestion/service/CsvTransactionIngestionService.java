@@ -1,6 +1,7 @@
 package com.younis.refinery.ingestion.service;
 
 import com.younis.refinery.ingestion.dto.CsvUploadResponse;
+import com.younis.refinery.ingestion.dto.ReconciliationReport;
 import com.younis.refinery.ingestion.dto.RejectedRecordResponse;
 import com.younis.refinery.ingestion.dto.TransactionRequest;
 import com.younis.refinery.ingestion.service.CsvTransactionOutputWriter.OutputFiles;
@@ -16,19 +17,27 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CsvTransactionIngestionService {
 
     private final TransactionValidationService transactionValidationService;
     private final CsvTransactionOutputWriter csvTransactionOutputWriter;
+    private final ReconciliationReportWriter reconciliationReportWriter;
 
-    public CsvTransactionIngestionService(TransactionValidationService transactionValidationService, CsvTransactionOutputWriter csvTransactionOutputWriter) {
+    public CsvTransactionIngestionService(
+            TransactionValidationService transactionValidationService,
+            CsvTransactionOutputWriter csvTransactionOutputWriter,
+            ReconciliationReportWriter reconciliationReportWriter) {
         this.transactionValidationService = transactionValidationService;
         this.csvTransactionOutputWriter = csvTransactionOutputWriter;
+        this.reconciliationReportWriter = reconciliationReportWriter;
     }
 
     public CsvUploadResponse processFile(MultipartFile file) {
@@ -80,15 +89,78 @@ public class CsvTransactionIngestionService {
             rejectedTransactions
         );
 
-        return new CsvUploadResponse(
-                file.getOriginalFilename(),
+        boolean reconciled = isReconciled(
                 totalRows,
                 acceptedTransactions.size(),
-                rejectedTransactions.size(),
-                outputFiles.acceptedOutputPath(),
-                outputFiles.rejectedOutputPath(),
-                rejectedRecords
+                rejectedTransactions.size()
         );
+
+        String processingStatus = determineProcessingStatus(
+                reconciled,
+                rejectedTransactions.size()
+        );
+
+        Map<String, Long> rejectionReasonSummary = buildRejectionReasonSummary(rejectedRecords);
+
+        ReconciliationReport reconciliationReport = new ReconciliationReport(
+            file.getOriginalFilename(),
+            totalRows,
+            acceptedTransactions.size(),
+            rejectedTransactions.size(),
+            reconciled,
+            processingStatus,
+            outputFiles.acceptedOutputPath(),
+            outputFiles.rejectedOutputPath(),
+            rejectionReasonSummary,
+            Instant.now().toString()
+        );
+
+        String reconciliationReportPath = reconciliationReportWriter.writeReport(reconciliationReport);
+
+        return new CsvUploadResponse(
+            file.getOriginalFilename(),
+            totalRows,
+            acceptedTransactions.size(),
+            rejectedTransactions.size(),
+            reconciled,
+            processingStatus,
+            outputFiles.acceptedOutputPath(),
+            outputFiles.rejectedOutputPath(),
+            reconciliationReportPath,
+            rejectedRecords
+        );
+    }
+
+    private boolean isReconciled(
+            long totalRows,
+            long acceptedRows,
+            long rejectedRows
+    ) {
+        return totalRows == acceptedRows + rejectedRows;
+    }
+
+    private String determineProcessingStatus(
+            boolean reconciled,
+            long rejectedRows
+    ) {
+        if (!reconciled) {
+            return "FAILED_RECONCILIATION";
+        } else if (rejectedRows > 0) {
+            return "COMPLETED_WITH_REJECTIONS";
+        }
+        return "COMPLETED";
+    }
+
+    private Map<String, Long> buildRejectionReasonSummary(
+            List<RejectedRecordResponse> rejectedRecords
+    ) {
+        Map<String, Long> summary = new LinkedHashMap<>();
+
+        for (RejectedRecordResponse rejectedRecord : rejectedRecords) {
+            summary.merge(rejectedRecord.getReason(), 1L, Long::sum);
+        }
+
+        return summary;
     }
 
     private void validateFile(MultipartFile file) {

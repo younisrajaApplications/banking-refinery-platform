@@ -40,3 +40,5 @@ Current endpoints:
 
 - `/health`
 - `/actuator/health`
+
+The Java Ingestion Service can upload a transaction CSV file, validate each row, write accepted and rejected outputs, and generate a reconciliation report proving the processing outcome.

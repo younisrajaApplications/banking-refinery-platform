@@ -84,3 +84,21 @@ service-account.json
 
 tmp/
 temp/
+
+# =====================
+# Generated data outputs
+# =====================
+
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/accepted/
+!data/processed/rejected/
+!data/processed/reconciliation/
+
+data/processed/accepted/*
+data/processed/rejected/*
+data/processed/reconciliation/*
+
+!data/processed/accepted/.gitkeep
+!data/processed/rejected/.gitkeep
+!data/processed/reconciliation/.gitkeep

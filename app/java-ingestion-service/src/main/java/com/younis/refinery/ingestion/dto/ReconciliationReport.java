@@ -1,8 +1,8 @@
 package com.younis.refinery.ingestion.dto;
 
-import java.util.List;
+import java.util.Map;
 
-public class CsvUploadResponse {
+public class ReconciliationReport {
 
     private final String fileName;
     private final long totalRows;
@@ -12,10 +12,10 @@ public class CsvUploadResponse {
     private final String processingStatus;
     private final String acceptedOutputPath;
     private final String rejectedOutputPath;
-    private final String reconciliationReportPath;
-    private final List<RejectedRecordResponse> rejectedRecords;
+    private final Map<String, Long> rejectedReasonSummary;
+    private final String generatedAt;
 
-    public CsvUploadResponse(
+    public ReconciliationReport(
             String fileName,
             long totalRows,
             long acceptedRows,
@@ -24,8 +24,8 @@ public class CsvUploadResponse {
             String processingStatus,
             String acceptedOutputPath,
             String rejectedOutputPath,
-            String reconciliationReportPath,
-            List<RejectedRecordResponse> rejectedRecords) {
+            Map<String, Long> rejectedReasonSummary,
+            String generatedAt) {
         this.fileName = fileName;
         this.totalRows = totalRows;
         this.acceptedRows = acceptedRows;
@@ -34,8 +34,8 @@ public class CsvUploadResponse {
         this.processingStatus = processingStatus;
         this.acceptedOutputPath = acceptedOutputPath;
         this.rejectedOutputPath = rejectedOutputPath;
-        this.reconciliationReportPath = reconciliationReportPath;
-        this.rejectedRecords = rejectedRecords;
+        this.rejectedReasonSummary = rejectedReasonSummary;
+        this.generatedAt = generatedAt;
     }
 
     public String getFileName() {
@@ -70,11 +70,11 @@ public class CsvUploadResponse {
         return rejectedOutputPath;
     }
 
-    public String getReconciliationReportPath() {
-        return reconciliationReportPath;
+    public Map<String, Long> getRejectedReasonSummary() {
+        return rejectedReasonSummary;
     }
 
-    public List<RejectedRecordResponse> getRejectedRecords() {
-        return rejectedRecords;
+    public String getGeneratedAt() {
+        return generatedAt;
     }
 }
