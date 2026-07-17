@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: banking-refinery-postgres
+    environment:
+      POSTGRES_DB: banking_refinery
+      POSTGRES_USER: refinery_user
+      POSTGRES_PASSWORD: refinery_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - banking_refinery_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  banking_refinery_postgres_data:
