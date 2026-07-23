@@ -4,6 +4,7 @@ import java.util.List;
 
 public class CsvUploadResponse {
 
+    private final Long ingestionFileId;
     private final String fileName;
     private final long totalRows;
     private final long acceptedRows;
@@ -16,6 +17,7 @@ public class CsvUploadResponse {
     private final List<RejectedRecordResponse> rejectedRecords;
 
     public CsvUploadResponse(
+            Long ingestionFileId,
             String fileName,
             long totalRows,
             long acceptedRows,
@@ -26,6 +28,7 @@ public class CsvUploadResponse {
             String rejectedOutputPath,
             String reconciliationReportPath,
             List<RejectedRecordResponse> rejectedRecords) {
+        this.ingestionFileId = ingestionFileId;
         this.fileName = fileName;
         this.totalRows = totalRows;
         this.acceptedRows = acceptedRows;
@@ -36,6 +39,10 @@ public class CsvUploadResponse {
         this.rejectedOutputPath = rejectedOutputPath;
         this.reconciliationReportPath = reconciliationReportPath;
         this.rejectedRecords = rejectedRecords;
+    }
+
+    public Long getIngestionFileId() {
+        return ingestionFileId;
     }
 
     public String getFileName() {

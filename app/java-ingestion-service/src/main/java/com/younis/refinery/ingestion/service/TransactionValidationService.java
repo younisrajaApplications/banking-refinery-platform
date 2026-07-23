@@ -3,8 +3,11 @@ package com.younis.refinery.ingestion.service;
 import com.younis.refinery.ingestion.dto.TransactionRequest;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import static java.lang.Long.parseLong;
 
 @Service
 public class TransactionValidationService {
@@ -16,6 +19,7 @@ public class TransactionValidationService {
         validateCurrency(request.getCurrency());
         validateStatus(request.getStatus());
         validateTransactionTimestamp(request.getTransactionTimestamp());
+        validateTransactionAmount(request.getAmount());
     }
 
     private void validateCurrency(String currency) {
@@ -33,6 +37,12 @@ public class TransactionValidationService {
     private void validateTransactionTimestamp(LocalDateTime transactionTimestamp) {
         if (transactionTimestamp.isAfter(LocalDateTime.now())) {
             throw new IllegalArgumentException("transactionTimestamp cannot be in the future");
+        }
+    }
+
+    private void validateTransactionAmount(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Amount below 0: " + amount);
         }
     }
 }

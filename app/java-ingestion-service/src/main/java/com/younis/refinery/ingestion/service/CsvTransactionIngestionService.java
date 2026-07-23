@@ -4,6 +4,7 @@ import com.younis.refinery.ingestion.dto.CsvUploadResponse;
 import com.younis.refinery.ingestion.dto.ReconciliationReport;
 import com.younis.refinery.ingestion.dto.RejectedRecordResponse;
 import com.younis.refinery.ingestion.dto.TransactionRequest;
+import com.younis.refinery.ingestion.repository.IngestionResultRepository;
 import com.younis.refinery.ingestion.service.CsvTransactionOutputWriter.OutputFiles;
 import com.younis.refinery.ingestion.service.CsvTransactionOutputWriter.RejectedTransactionRecord;
 import org.springframework.stereotype.Service;
@@ -30,14 +31,17 @@ public class CsvTransactionIngestionService {
     private final TransactionValidationService transactionValidationService;
     private final CsvTransactionOutputWriter csvTransactionOutputWriter;
     private final ReconciliationReportWriter reconciliationReportWriter;
+    private final IngestionResultRepository ingestionResultRepository;
 
     public CsvTransactionIngestionService(
             TransactionValidationService transactionValidationService,
             CsvTransactionOutputWriter csvTransactionOutputWriter,
-            ReconciliationReportWriter reconciliationReportWriter) {
+            ReconciliationReportWriter reconciliationReportWriter,
+            IngestionResultRepository ingestionResultRepository) {
         this.transactionValidationService = transactionValidationService;
         this.csvTransactionOutputWriter = csvTransactionOutputWriter;
         this.reconciliationReportWriter = reconciliationReportWriter;
+        this.ingestionResultRepository = ingestionResultRepository;
     }
 
     public CsvUploadResponse processFile(MultipartFile file) {
@@ -117,7 +121,22 @@ public class CsvTransactionIngestionService {
 
         String reconciliationReportPath = reconciliationReportWriter.writeReport(reconciliationReport);
 
+        Long ingestionFileId = ingestionResultRepository.saveIngestionResult(
+            file.getOriginalFilename(),
+            totalRows,
+            acceptedTransactions.size(),
+            rejectedTransactions.size(),
+            reconciled,
+            processingStatus,
+            outputFiles.acceptedOutputPath(),
+            outputFiles.rejectedOutputPath(),
+            reconciliationReportPath,
+            acceptedTransactions,
+            rejectedRecords
+        );
+
         return new CsvUploadResponse(
+            ingestionFileId,
             file.getOriginalFilename(),
             totalRows,
             acceptedTransactions.size(),
