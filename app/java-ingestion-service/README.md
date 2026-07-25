@@ -168,3 +168,37 @@ SELECT row_number, transaction_id, rejection_reason
 FROM rejected_transaction;
 
 SELECT * FROM reconciliation_report;
+```
+## Ingestion Query API
+
+The service exposes endpoints for reading ingestion history from Postgres.
+
+### Endpoints
+
+`GET /ingestions`
+
+Returns recent ingestion runs.
+
+`GET /ingestions/{id}`
+
+Returns full details for a specific ingestion run, including accepted and rejected records.
+
+`GET /ingestions/{id}/accepted`
+
+Returns accepted transactions for a specific ingestion run.
+
+`GET /ingestions/{id}/rejected`
+
+Returns rejected transactions for a specific ingestion run.
+
+### Example Requests
+
+```bash
+curl -s http://localhost:8080/ingestions | python3 -m json.tool
+
+curl -s http://localhost:8080/ingestions/1 | python3 -m json.tool
+
+curl -s http://localhost:8080/ingestions/1/accepted | python3 -m json.tool
+
+curl -s http://localhost:8080/ingestions/1/rejected | python3 -m json.tool
+```

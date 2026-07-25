@@ -78,6 +78,4 @@ public class TransactionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation failed"));
     }
-
-
 }

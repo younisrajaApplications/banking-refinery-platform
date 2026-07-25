@@ -1,0 +1,5 @@
+CREATE INDEX idx_ingestion_file_created_at ON ingestion_file(created_at);
+CREATE INDEX idx_ingestion_file_processing_status ON ingestion_file(processing_status);
+CREATE INDEX idx_accepted_file_ingestion_file_id ON accepted_transaction(ingestion_file_id);
+CREATE INDEX idx_rejected_file_ingestion_file_id ON rejected_transaction(ingestion_file_id);
+CREATE INDEX idx_reconciliation_report_ingestion_file_id ON reconciliation_report(ingestion_file_id);
