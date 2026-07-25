@@ -142,3 +142,29 @@ The total row count does not equal accepted rows plus rejected rows.
 ## Why Reconciliation Matters
 
 In banking-style data systems, it is not enough to move data from one place to another. The platform must prove that every input row was either accepted or rejected, and that failures are explainable.
+
+## Database Persistence
+
+When a CSV file is uploaded, the service now persists ingestion results to Postgres.
+
+The following tables are populated:
+
+- `ingestion_file`
+- `accepted_transaction`
+- `rejected_transaction`
+- `reconciliation_report`
+
+The API response includes `ingestionFileId`, which links the upload response to the database record.
+
+### Example Queries
+
+```sql
+SELECT * FROM ingestion_file;
+
+SELECT transaction_id, amount, currency, status
+FROM accepted_transaction;
+
+SELECT row_number, transaction_id, rejection_reason
+FROM rejected_transaction;
+
+SELECT * FROM reconciliation_report;

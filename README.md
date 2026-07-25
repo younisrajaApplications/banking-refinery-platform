@@ -42,3 +42,26 @@ Current endpoints:
 - `/actuator/health`
 
 The Java Ingestion Service can upload a transaction CSV file, validate each row, write accepted and rejected outputs, and generate a reconciliation report proving the processing outcome.
+
+## Local Database
+
+The project uses a local Postgres database through Docker Compose.
+
+The database stores ingestion metadata, accepted transactions, rejected transactions and reconciliation report references.
+
+Start the database:
+
+```bash
+docker compose up -d
+```
+Check running containers:
+```bash
+docker compose ps
+```
+Connect to postgres:
+```bash
+docker exec -it banking-refinery-postgres psql -U refinery_user -d banking_refinery
+```
+Database schema changes are managed through Flyway migrations located in:
+
+app/java-ingestion-service/src/main/resources/db/migration
