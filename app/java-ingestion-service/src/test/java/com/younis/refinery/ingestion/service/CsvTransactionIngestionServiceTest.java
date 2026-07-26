@@ -1,15 +1,21 @@
 package com.younis.refinery.ingestion.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.younis.refinery.ingestion.dto.CsvUploadResponse;
+import com.younis.refinery.ingestion.repository.IngestionResultRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CsvTransactionIngestionServiceTest {
 
@@ -20,9 +26,26 @@ public class CsvTransactionIngestionServiceTest {
 
     @BeforeEach
     void setUp() {
+        IngestionResultRepository ingestionResultRepository = mock(IngestionResultRepository.class);
+
+        when(ingestionResultRepository.saveIngestionResult(
+                anyString(),
+                anyLong(),
+                anyLong(),
+                anyLong(),
+                anyBoolean(),
+                anyString(),
+                anyString(),
+                anyString(),
+                anyString(),
+                anyList(),
+                anyList()
+        )).thenReturn(1L);
+
         TransactionValidationService transactionValidationService = new TransactionValidationService();
         CsvTransactionOutputWriter outputWriter = new CsvTransactionOutputWriter(tempDir.toString());
-        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService, outputWriter);
+        ReconciliationReportWriter reconciliationReportWriter = new ReconciliationReportWriter(tempDir.toString(), new ObjectMapper());
+        csvTransactionIngestionService = new CsvTransactionIngestionService(transactionValidationService, outputWriter, reconciliationReportWriter, ingestionResultRepository);
     }
 
     @Test
@@ -47,10 +70,24 @@ public class CsvTransactionIngestionServiceTest {
         assertEquals(3, response.getTotalRows());
         assertEquals(2, response.getAcceptedRows());
         assertEquals(1, response.getRejectedRows());
+
+        assertEquals(1L, response.getIngestionFileId());
+
+        assertTrue(response.isReconciled());
+        assertEquals("COMPLETED_WITH_REJECTIONS", response.getProcessingStatus());
+
         assertEquals("TXN-1003", response.getRejectedRecords().getFirst().getTransactionId());
         assertEquals("Unsupported currency: ABC", response.getRejectedRecords().getFirst().getReason());
 
         assertTrue(response.getAcceptedOutputPath().contains("accepted_transactions_"));
         assertTrue(response.getRejectedOutputPath().contains("rejected_transactions_"));
+
+        System.out.println(response.getReconciliationReportPath());
+
+        assertTrue(response.getReconciliationReportPath().contains("reconciliation_report_"));
+
+        assertTrue(Files.exists(Path.of(response.getAcceptedOutputPath())));
+        assertTrue(Files.exists(Path.of(response.getRejectedOutputPath())));
+        assertTrue(Files.exists(Path.of(response.getReconciliationReportPath())));
     }
 }

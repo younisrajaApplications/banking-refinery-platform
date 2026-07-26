@@ -1,8 +1,9 @@
 package com.younis.refinery.ingestion.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-public class CsvUploadResponse {
+public class IngestionDetailResponse {
 
     private final Long ingestionFileId;
     private final String fileName;
@@ -14,9 +15,11 @@ public class CsvUploadResponse {
     private final String acceptedOutputPath;
     private final String rejectedOutputPath;
     private final String reconciliationReportPath;
-    private final List<RejectedRecordResponse> rejectedRecords;
+    private final LocalDateTime createdAt;
+    private final List<AcceptedTransactionResponse> acceptedTransactions;
+    private final List<RejectedTransactionResponse> rejectedTransactions;
 
-    public CsvUploadResponse(
+    public IngestionDetailResponse(
             Long ingestionFileId,
             String fileName,
             long totalRows,
@@ -27,7 +30,9 @@ public class CsvUploadResponse {
             String acceptedOutputPath,
             String rejectedOutputPath,
             String reconciliationReportPath,
-            List<RejectedRecordResponse> rejectedRecords) {
+            LocalDateTime createdAt,
+            List<AcceptedTransactionResponse> acceptedTransactions,
+            List<RejectedTransactionResponse> rejectedTransactions) {
         this.ingestionFileId = ingestionFileId;
         this.fileName = fileName;
         this.totalRows = totalRows;
@@ -38,7 +43,9 @@ public class CsvUploadResponse {
         this.acceptedOutputPath = acceptedOutputPath;
         this.rejectedOutputPath = rejectedOutputPath;
         this.reconciliationReportPath = reconciliationReportPath;
-        this.rejectedRecords = rejectedRecords;
+        this.createdAt = createdAt;
+        this.acceptedTransactions = acceptedTransactions;
+        this.rejectedTransactions = rejectedTransactions;
     }
 
     public Long getIngestionFileId() {
@@ -81,7 +88,15 @@ public class CsvUploadResponse {
         return reconciliationReportPath;
     }
 
-    public List<RejectedRecordResponse> getRejectedRecords() {
-        return rejectedRecords;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public List<AcceptedTransactionResponse> getAcceptedTransactions() {
+        return acceptedTransactions;
+    }
+
+    public List<RejectedTransactionResponse> getRejectedTransactions() {
+        return rejectedTransactions;
     }
 }

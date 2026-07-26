@@ -1,8 +1,8 @@
 package com.younis.refinery.ingestion.dto;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-public class CsvUploadResponse {
+public class IngestionSummaryResponse {
 
     private final Long ingestionFileId;
     private final String fileName;
@@ -11,12 +11,9 @@ public class CsvUploadResponse {
     private final long rejectedRows;
     private final boolean reconciled;
     private final String processingStatus;
-    private final String acceptedOutputPath;
-    private final String rejectedOutputPath;
-    private final String reconciliationReportPath;
-    private final List<RejectedRecordResponse> rejectedRecords;
+    private final LocalDateTime createdAt;
 
-    public CsvUploadResponse(
+    public IngestionSummaryResponse(
             Long ingestionFileId,
             String fileName,
             long totalRows,
@@ -24,10 +21,7 @@ public class CsvUploadResponse {
             long rejectedRows,
             boolean reconciled,
             String processingStatus,
-            String acceptedOutputPath,
-            String rejectedOutputPath,
-            String reconciliationReportPath,
-            List<RejectedRecordResponse> rejectedRecords) {
+            LocalDateTime createdAt) {
         this.ingestionFileId = ingestionFileId;
         this.fileName = fileName;
         this.totalRows = totalRows;
@@ -35,10 +29,7 @@ public class CsvUploadResponse {
         this.rejectedRows = rejectedRows;
         this.reconciled = reconciled;
         this.processingStatus = processingStatus;
-        this.acceptedOutputPath = acceptedOutputPath;
-        this.rejectedOutputPath = rejectedOutputPath;
-        this.reconciliationReportPath = reconciliationReportPath;
-        this.rejectedRecords = rejectedRecords;
+        this.createdAt = createdAt;
     }
 
     public Long getIngestionFileId() {
@@ -69,19 +60,7 @@ public class CsvUploadResponse {
         return processingStatus;
     }
 
-    public String getAcceptedOutputPath() {
-        return acceptedOutputPath;
-    }
-
-    public String getRejectedOutputPath() {
-        return rejectedOutputPath;
-    }
-
-    public String getReconciliationReportPath() {
-        return reconciliationReportPath;
-    }
-
-    public List<RejectedRecordResponse> getRejectedRecords() {
-        return rejectedRecords;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }
