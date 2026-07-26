@@ -91,3 +91,31 @@ For example, we can answer:
 - When did the ingestion run happen?
 
 This is important in banking-style systems because ingestion should be traceable, auditable and explainable.
+
+## Query API
+
+The Java Ingestion Service exposes read endpoints backed by Postgres.
+
+These endpoints allow users to inspect previous ingestion runs without connecting directly to the database.
+
+The query flow is:
+
+1. The client calls an API endpoint such as `GET /ingestions`.
+2. The controller receives the HTTP request.
+3. The service applies query behaviour and not-found handling.
+4. The repository runs SQL against Postgres.
+5. The response is returned as JSON.
+
+This keeps database access inside the application instead of exposing direct database access to users.
+
+## Query Indexes
+
+The migration `V2__add_ingestion_query_indexes.sql` adds indexes for common query paths:
+
+- ingestion file creation time
+- ingestion processing status
+- accepted transactions by ingestion file ID
+- rejected transactions by ingestion file ID
+- reconciliation reports by ingestion file ID
+
+These indexes support faster lookups as ingestion history grows.
