@@ -65,3 +65,23 @@ docker exec -it banking-refinery-postgres psql -U refinery_user -d banking_refin
 Database schema changes are managed through Flyway migrations located in:
 
 app/java-ingestion-service/src/main/resources/db/migration
+
+## SQL Data Quality Checks
+
+Postgres data quality checks live in:
+
+`sql/postgres/data-quality/`
+
+Run all checks:
+
+```bash
+./scripts/run-postgres-quality-checks.sh
+```
+
+Most checks use the pattern:
+
+`zero rows = pass`
+
+`one or more rows = investigate`
+
+These checks validate reconciliation, duplicate transactions, accepted transaction quality, rejected record explainability and reconciliation report coverage.
