@@ -85,3 +85,17 @@ Most checks use the pattern:
 `one or more rows = investigate`
 
 These checks validate reconciliation, duplicate transactions, accepted transaction quality, rejected record explainability and reconciliation report coverage.
+
+### CI-Friendly Data Quality Checks
+
+Run the CI-friendly quality gate:
+
+```bash
+./scripts/run-postgres-quality-checks-ci.sh
+```
+This script runs the failure-check SQL files and exits with:
+
+0 when all checks pass
+1 when one or more checks return failing rows
+
+The summary query 99_ingestion_quality_summary.sql is excluded from the CI gate because it is expected to return rows.
