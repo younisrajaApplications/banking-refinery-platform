@@ -99,3 +99,22 @@ This script runs the failure-check SQL files and exits with:
 1 when one or more checks return failing rows
 
 The summary query 99_ingestion_quality_summary.sql is excluded from the CI gate because it is expected to return rows.
+
+## Jenkins CI Pipeline
+
+This repository includes a root-level `Jenkinsfile`.
+
+The pipeline currently:
+
+- verifies required tools
+- starts Postgres using Docker Compose
+- runs Java tests
+- runs CI-friendly SQL data quality checks
+- publishes test results
+- archives Postgres logs
+
+The pipeline represents the project validation process as code.
+
+For more detail, see:
+
+`jenkins/README.md`
