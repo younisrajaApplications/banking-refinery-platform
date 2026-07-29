@@ -8,12 +8,16 @@ pipeline {
 
     environment {
         APP_DIR = 'app/java-ingestion-service'
+        FLYWAY_URL = 'jdbc:postgresql://host.docker.internal:5432/banking_refinery'
+        FLYWAY_USER = 'refinery_user'
+        FLYWAY_PASSWORD = 'refinery_password'
     }
 
     stages {
         stage('Verify Tools') {
             steps {
                 sh 'java -version'
+                sh 'git --version'
                 sh 'docker --version'
                 sh 'docker compose version'
             }
@@ -23,6 +27,20 @@ pipeline {
             steps {
                 sh 'docker compose up -d postgres'
                 sh 'docker compose ps'
+            }
+        }
+
+        stage('Run Database Migrations') {
+            steps {
+                dir("${APP_DIR}") {
+                    sh '''
+                        ./mvnw flyway:migrate \
+                          -Dflyway.url="${FLYWAY_URL}" \
+                          -Dflyway.user="${FLYWAY_USER}" \
+                          -Dflyway.password="${FLYWAY_PASSWORD}" \
+                          -Dflyway.locations=filesystem:src/main/resources/db/migration
+                    '''
+                }
             }
         }
 
