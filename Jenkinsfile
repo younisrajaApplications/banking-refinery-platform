@@ -47,7 +47,12 @@ pipeline {
         stage('Run Java Tests') {
             steps {
                 dir("${APP_DIR}") {
-                    sh './mvnw clean test'
+                    sh '''
+                        SPRING_DATASOURCE_URL="${FLYWAY_URL}" \
+                        SPRING_DATASOURCE_USERNAME="${FLYWAY_USER}" \
+                        SPRING_DATASOURCE_PASSWORD="${FLYWAY_PASSWORD}" \
+                        ./mvnw clean test
+                    '''
                 }
             }
         }
