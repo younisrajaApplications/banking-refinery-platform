@@ -270,6 +270,20 @@ The pipeline currently:
 
 The pipeline represents the project validation process as code.
 
+### Running Jenkins Locally
+
+Start Jenkins locally with Docker:
+
+```bash
+docker compose -f docker-compose.jenkins.yml up -d --build
+```
+
+Open Jenkins at:
+
+`http://localhost:8081`
+
+The local Jenkins setup uses a custom Jenkins image with Docker CLI installed so the pipeline can start Postgres and run SQL quality checks.
+
 For more detail, see:
 
 ```text
