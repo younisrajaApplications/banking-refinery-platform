@@ -103,3 +103,29 @@ Most checks follow this pattern:
 ## Why This Matters
 
 In banking-style data systems, it is not enough for data to be loaded. The platform must prove that the data is complete, valid and explainable after ingestion.
+
+## CI-Friendly Quality Gate
+
+The script below is designed for automated checks:
+
+```bash
+./scripts/run-postgres-quality-checks-ci.sh
+```
+
+Unlike the manual runner, this script treats returned rows as failures.
+
+For checks 01 to 07:
+
+zero rows = pass
+
+one or more rows = fail
+
+The script exits with:
+
+0 when all checks pass
+|
+1 when one or more checks fail
+
+This makes the checks suitable for Jenkins or another CI/CD system.
+
+The summary query 99_ingestion_quality_summary.sql is excluded from the CI gate because it is a report and is expected to return rows.
