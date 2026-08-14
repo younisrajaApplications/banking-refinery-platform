@@ -35,9 +35,11 @@ pipeline {
 
         stage('Start Postgres') {
             steps {
-                docker compose -f "${CI_COMPOSE_FILE}" down -v || true
-                docker compose -f "${CI_COMPOSE_FILE}" up -d postgres
-                docker compose -f "${CI_COMPOSE_FILE}" ps
+                sh '''
+                    docker compose -f "${CI_COMPOSE_FILE}" down -v || true
+                    docker compose -f "${CI_COMPOSE_FILE}" up -d postgres
+                    docker compose -f "${CI_COMPOSE_FILE}" ps
+                '''
             }
         }
 
