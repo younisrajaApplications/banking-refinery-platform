@@ -32,13 +32,15 @@ cleanup() {
 
 trap cleanup EXIT
 
+echo "E2E datasource URL: ${SPRING_DATASOURCE_URL}"
+echo "E2E datasource username: ${SPRING_DATASOURCE_USERNAME}"
+
 echo "Starting Java app for end-to-end ingestion check..."
 
 (
   cd "$APP_DIR"
 
-  echo "E2E datasource URL: ${SPRING_DATASOURCE_URL}"
-  echo "E2E datasource username: ${SPRING_DATASOURCE_USERNAME}"
+
 
   SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
   SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
