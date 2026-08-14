@@ -47,9 +47,11 @@ pipeline {
             steps {
                 sh '''
                     for i in $(seq 1 30); do
-                        if docker exec "${DB_CONTAINER}" pg_isready -U "${FLYWAY_USER}" -d "${DB_NAME}"; then
+                        if docker compose -f "${CI_COMPOSE_FILE}" exec -T postgres \
+                            pg_isready -U "${FLYWAY_USER}" -d "${DB_NAME}"; then
+
                             echo "Postgres is ready"
-                            exit 0
+                            break
                         fi
 
                         echo "Waiting for Postgres"
