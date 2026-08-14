@@ -3,7 +3,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-app/java-ingestion-service}"
-APP_BASE_URL="${APP_BASE_URL:-http://localhost:8080}"
+APP_BASE_URL="${APP_BASE_URL:-http://localhost:18080}"
 SAMPLE_FILE="${SAMPLE_FILE:-data/sample/transactions_sample.csv}"
 
 DB_CONTAINER="${DB_CONTAINER:-banking-refinery-postgres-ci}"
@@ -36,7 +36,7 @@ echo "Checking existing Java processes..."
 ps -ef | grep '[j]ava' || true
 
 echo "Checking Docker containers using 8080..."
-docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | grep 8080 || true
+docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | grep 18080 || true
 
 if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
     echo "ERROR: An application is already responding on $APP_BASE_URL"
