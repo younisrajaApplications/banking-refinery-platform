@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-DB_CONTAINER="banking-refinery-postgres"
-DB_USER="refinery_user"
-DB_NAME="banking_refinery"
-CHECK_DIR="sql/postgres/data-quality"
+DB_CONTAINER="${DB_CONTAINER:-banking-refinery-postgres}"
+DB_USER="${DB_USER:-refinery_user}"
+DB_NAME="${DB_NAME:-banking_refinery}"
+CHECK_DIR="${CHECK_DIR:-sql/postgres/data-quality}"
 
 FAILED=0
 
