@@ -51,7 +51,7 @@ pipeline {
                             pg_isready -U "${FLYWAY_USER}" -d "${DB_NAME}"; then
 
                             echo "Postgres is ready"
-                            break
+                            exit 0
                         fi
 
                         echo "Waiting for Postgres"
