@@ -32,13 +32,15 @@ cleanup() {
 
 trap cleanup EXIT
 
-echo "E2E datasource URL: ${SPRING_DATASOURCE_URL}"
-echo "E2E datasource username: ${SPRING_DATASOURCE_USERNAME}"
+echo "Checking existing Java processes..."
+ps -ef | grep '[j]ava' || true
 
-echo "Checking whether port 8080 is already in use..."
+echo "Checking Docker containers using 8080..."
+docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | grep 8080 || true
 
 if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
-  echo "ERROR: An application is already responding on $APP_BASE_URL"
+    echo "ERROR: An application is already responding on $APP_BASE_URL"
+    exit 1
 fi
 
 echo "Processes using port 8080:"
