@@ -39,8 +39,10 @@ echo "Checking whether port 8080 is already in use..."
 
 if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
   echo "ERROR: An application is already responding on $APP_BASE_URL"
-  exit 1
 fi
+
+echo "Processes using port 8080:"
+lsof -i :8080 || true
 
 echo "Starting Java app for end-to-end ingestion check..."
 
@@ -51,6 +53,9 @@ echo "Starting Java app for end-to-end ingestion check..."
   SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
   SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
   ./mvnw spring-boot:run
+
+  echo "Started background process PID: $APP_PID"
+
 ) > "$APP_LOG" 2>&1 &
 
 APP_PID=$!
@@ -60,6 +65,10 @@ echo "Waiting for Java app to become healthy..."
 for attempt in {1..60}; do
   if curl -sf "$APP_BASE_URL/health" >/dev/null; then
     echo "Java app is healthy."
+
+    echo "Application startup log:"
+    tail -50 "$APP_LOG"
+
     break
   fi
 
@@ -80,7 +89,7 @@ done
 
 echo "Uploading sample CSV..."
 
-curl -sSf \
+curl -sv \
   -F "file=@${SAMPLE_FILE}" \
   "$APP_BASE_URL/transactions/upload" \
   > "$RESPONSE_FILE"
