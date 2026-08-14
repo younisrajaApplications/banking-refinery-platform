@@ -35,12 +35,17 @@ trap cleanup EXIT
 echo "E2E datasource URL: ${SPRING_DATASOURCE_URL}"
 echo "E2E datasource username: ${SPRING_DATASOURCE_USERNAME}"
 
+echo "Checking whether port 8080 is already in use..."
+
+if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
+  echo "ERROR: An application is already responding on $APP_BASE_URL"
+  exit 1
+fi
+
 echo "Starting Java app for end-to-end ingestion check..."
 
 (
   cd "$APP_DIR"
-
-  echo "Inside nested part"
 
   SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
   SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
