@@ -42,7 +42,7 @@ if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
 fi
 
 echo "Processes using port 8080:"
-lsof -i :8080 || true
+ss -ltnp | grep ':8080' || true
 
 echo "Starting Java app for end-to-end ingestion check..."
 
