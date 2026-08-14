@@ -13,7 +13,7 @@ pipeline {
         DB_CONTAINER = 'banking-refinery-postgres-ci'
         DB_NAME = 'banking_refinery'
 
-        FLYWAY_URL = 'jdbc:postgresql://host.docker.internal:5432/banking_refinery'
+        FLYWAY_URL = 'jdbc:postgresql://host.docker.internal:5433/banking_refinery'
         FLYWAY_USER = 'refinery_user'
         FLYWAY_PASSWORD = 'refinery_password'
 
