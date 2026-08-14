@@ -6,11 +6,11 @@ APP_DIR="${APP_DIR:-app/java-ingestion-service}"
 APP_BASE_URL="${APP_BASE_URL:-http://localhost:8080}"
 SAMPLE_FILE="${SAMPLE_FILE:-data/sample/transactions_sample.csv}"
 
-DB_CONTAINER="${DB_CONTAINER:-banking-refinery-postgres}"
+DB_CONTAINER="${DB_CONTAINER:-banking-refinery-postgres-ci}"
 DB_USER="${DB_USER:-refinery_user}"
 DB_NAME="${DB_NAME:-banking_refinery}"
 
-SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5432/banking_refinery}"
+SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5433/banking_refinery}"
 SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME:-refinery_user}"
 SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD:-refinery_password}"
 
