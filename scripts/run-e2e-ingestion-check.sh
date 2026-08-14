@@ -40,7 +40,7 @@ echo "Starting Java app for end-to-end ingestion check..."
 (
   cd "$APP_DIR"
 
-
+  echo "Inside nested part"
 
   SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
   SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
