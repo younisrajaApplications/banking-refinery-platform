@@ -15,6 +15,8 @@ SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5433
 SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME:-refinery_user}"
 SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD:-refinery_password}"
 
+CI_COMPOSE_FILE="${CI_COMPOSE_FILE:-docker-compose.ci.yml}"
+
 APP_LOG="e2e-app.log"
 RESPONSE_FILE="e2e-ingestion-response.json"
 DETAIL_FILE="e2e-ingestion-detail.json"
@@ -35,9 +37,6 @@ trap cleanup EXIT
 
 echo "Checking existing Java processes..."
 ps -ef | grep '[j]ava' || true
-
-echo "Checking Docker containers using 8080..."
-docker ps --format '{{.ID}} {{.Names}} {{.Ports}}' | grep 18080 || true
 
 if curl -sf "$APP_BASE_URL/health" >/dev/null 2>&1; then
     echo "ERROR: An application is already responding on $APP_BASE_URL"
@@ -138,19 +137,19 @@ grep -q '"rejectedRows":3' "$DETAIL_FILE"
 echo "Validating database records..."
 
 ACCEPTED_COUNT=$(
-  docker exec -i "$DB_CONTAINER" \
+  docker compose -f "$CI_COMPOSE_FILE" exec -T postgres \
     psql -U "$DB_USER" -d "$DB_NAME" -t -A \
     -c "SELECT COUNT(*) FROM accepted_transaction WHERE ingestion_file_id = ${INGESTION_ID};"
 )
 
 REJECTED_COUNT=$(
-  docker exec -i "$DB_CONTAINER" \
+  docker compose -f "$CI_COMPOSE_FILE" exec -T postgres \
     psql -U "$DB_USER" -d "$DB_NAME" -t -A \
     -c "SELECT COUNT(*) FROM rejected_transaction WHERE ingestion_file_id = ${INGESTION_ID};"
 )
 
 REPORT_COUNT=$(
-  docker exec -i "$DB_CONTAINER" \
+  docker compose -f "$CI_COMPOSE_FILE" exec -T postgres \
     psql -U "$DB_USER" -d "$DB_NAME" -t -A \
     -c "SELECT COUNT(*) FROM reconciliation_report WHERE ingestion_file_id = ${INGESTION_ID};"
 )
