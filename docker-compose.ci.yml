@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: baning-refinery-postgres-ci
+    container_name: banking-refinery-postgres-ci
     environment:
       POSTGRES_DB: banking_refinery
       POSTGRES_USER: refinery_user
