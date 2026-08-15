@@ -3,7 +3,8 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-app/java-ingestion-service}"
-APP_BASE_URL="${APP_BASE_URL:-http://localhost:18080}"
+APP_PORT="${APP_PORT:-18080}"
+APP_BASE_URL="${APP_BASE_URL:-http://localhost:${APP_PORT}}"
 SAMPLE_FILE="${SAMPLE_FILE:-data/sample/transactions_sample.csv}"
 
 DB_CONTAINER="${DB_CONTAINER:-banking-refinery-postgres-ci}"
@@ -51,6 +52,7 @@ echo "Starting Java app for end-to-end ingestion check..."
 (
   cd "$APP_DIR"
 
+  SERVER_PORT="$APP_PORT"
   SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
   SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
   SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
