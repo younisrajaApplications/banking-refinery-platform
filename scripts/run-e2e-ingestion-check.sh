@@ -54,11 +54,11 @@ echo "Starting Java app for end-to-end ingestion check..."
   SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
   ./mvnw spring-boot:run
 
-  echo "Started background process PID: $APP_PID"
-
 ) > "$APP_LOG" 2>&1 &
 
 APP_PID=$!
+
+echo "Started background process PID: $APP_PID"
 
 echo "Waiting for Java app to become healthy..."
 
@@ -89,7 +89,7 @@ done
 
 echo "Uploading sample CSV..."
 
-curl -sv \
+curl -sSf \
   -F "file=@${SAMPLE_FILE}" \
   "$APP_BASE_URL/transactions/upload" \
   > "$RESPONSE_FILE"

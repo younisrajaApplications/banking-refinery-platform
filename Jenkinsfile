@@ -95,14 +95,13 @@ pipeline {
         stage('Run End-to-End Ingestion Check') {
             steps {
                 sh '''
-                    echo "===== GIT COMMIT ====="
-                    git rev-parse HEAD
-
-                    echo "===== E2E SCRIPT CONFIG ====="
-                    grep -n "APP_PORT\\|APP_BASE_URL\\|SERVER_PORT\\|spring-boot:run" \
-                      scripts/run-e2e-ingestion-check.sh || true
-
-                    echo "===== RUNNING E2E ====="
+                    APP_PORT=18080 \
+                    APP_BASE_URL=http://localhost:18080 \
+                    DB_CONTAINER="${DB_CONTAINER}" \
+                    CI_COMPOSE_FILE="${CI_COMPOSE_FILE}" \
+                    SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
+                    SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
+                    SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}" \
                     ./scripts/run-e2e-ingestion-check.sh
                 '''
             }
