@@ -94,7 +94,17 @@ pipeline {
 
         stage('Run End-to-End Ingestion Check') {
             steps {
-                sh './scripts/run-e2e-ingestion-check.sh'
+                sh '''
+                    echo "===== GIT COMMIT ====="
+                    git rev-parse HEAD
+
+                    echo "===== E2E SCRIPT CONFIG ====="
+                    grep -n "APP_PORT\\|APP_BASE_URL\\|SERVER_PORT\\|spring-boot:run" \
+                      scripts/run-e2e-ingestion-check.sh || true
+
+                    echo "===== RUNNING E2E ====="
+                    ./scripts/run-e2e-ingestion-check.sh
+                '''
             }
         }
 
