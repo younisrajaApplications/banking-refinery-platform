@@ -284,6 +284,10 @@ Open Jenkins at:
 
 The local Jenkins setup uses a custom Jenkins image with Docker CLI installed so the pipeline can start Postgres and run SQL quality checks.
 
+The Jenkins pipeline also includes an end-to-end ingestion validation stage.
+
+This starts the Java service, uploads the sample transaction CSV, validates the API response and checks the expected records were written to Postgres.
+
 For more detail, see:
 
 ```text

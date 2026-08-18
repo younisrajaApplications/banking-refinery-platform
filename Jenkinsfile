@@ -8,9 +8,18 @@ pipeline {
 
     environment {
         APP_DIR = 'app/java-ingestion-service'
-        FLYWAY_URL = 'jdbc:postgresql://host.docker.internal:5432/banking_refinery'
+
+        CI_COMPOSE_FILE = 'docker-compose.ci.yml'
+        DB_CONTAINER = 'banking-refinery-postgres-ci'
+        DB_NAME = 'banking_refinery'
+
+        FLYWAY_URL = 'jdbc:postgresql://host.docker.internal:5433/banking_refinery'
         FLYWAY_USER = 'refinery_user'
         FLYWAY_PASSWORD = 'refinery_password'
+
+        SPRING_DATASOURCE_URL = 'jdbc:postgresql://host.docker.internal:5433/banking_refinery'
+        SPRING_DATASOURCE_USERNAME = 'refinery_user'
+        SPRING_DATASOURCE_PASSWORD = 'refinery_password'
     }
 
     stages {
@@ -20,13 +29,39 @@ pipeline {
                 sh 'git --version'
                 sh 'docker --version'
                 sh 'docker compose version'
+                sh 'curl --version'
             }
         }
 
         stage('Start Postgres') {
             steps {
-                sh 'docker compose up -d postgres'
-                sh 'docker compose ps'
+                sh '''
+                    docker compose -f "${CI_COMPOSE_FILE}" down -v || true
+                    docker compose -f "${CI_COMPOSE_FILE}" up -d postgres
+                    docker compose -f "${CI_COMPOSE_FILE}" ps
+                '''
+            }
+        }
+
+        stage('Wait for Postgres') {
+            steps {
+                sh '''
+                    for i in $(seq 1 30); do
+                        if docker compose -f "${CI_COMPOSE_FILE}" exec -T postgres \
+                            pg_isready -U "${FLYWAY_USER}" -d "${DB_NAME}"; then
+
+                            echo "Postgres is ready"
+                            exit 0
+                        fi
+
+                        echo "Waiting for Postgres"
+                        sleep 2
+                    done
+
+                    echo "Postgres did not become ready in time."
+                    docker compose -f "${CI_COMPOSE_FILE}" logs --no-color postgres || true
+                    exit 1
+                '''
             }
         }
 
@@ -48,12 +83,27 @@ pipeline {
             steps {
                 dir("${APP_DIR}") {
                     sh '''
-                        SPRING_DATASOURCE_URL="${FLYWAY_URL}" \
-                        SPRING_DATASOURCE_USERNAME="${FLYWAY_USER}" \
-                        SPRING_DATASOURCE_PASSWORD="${FLYWAY_PASSWORD}" \
+                        SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
+                        SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
+                        SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}" \
                         ./mvnw clean test
                     '''
                 }
+            }
+        }
+
+        stage('Run End-to-End Ingestion Check') {
+            steps {
+                sh '''
+                    APP_PORT=18080 \
+                    APP_BASE_URL=http://localhost:18080 \
+                    DB_CONTAINER="${DB_CONTAINER}" \
+                    CI_COMPOSE_FILE="${CI_COMPOSE_FILE}" \
+                    SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL}" \
+                    SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME}" \
+                    SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD}" \
+                    ./scripts/run-e2e-ingestion-check.sh
+                '''
             }
         }
 
@@ -69,10 +119,19 @@ pipeline {
             junit allowEmptyResults: true, testResults: 'app/java-ingestion-service/target/surefire-reports/*.xml'
 
             sh '''
-                docker compose logs --no-color postgres > postgres.log || true
+                docker compose -f "${CI_COMPOSE_FILE}" logs --no-color postgres > postgres-ci.log || true
             '''
 
-            archiveArtifacts allowEmptyArchive: true, artifacts: 'postgres.log'
+            archiveArtifacts allowEmptyArchive: true, artifacts: '''
+                postgres-ci.log,
+                e2e-app.log,
+                e2e-ingestion-response.json,
+                e2e-ingestion-detail.json
+            '''
+
+            sh '''
+                docker compose -f "${CI_COMPOSE_FILE}" down -v || true
+            '''
         }
 
         success {

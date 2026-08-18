@@ -108,3 +108,22 @@ The Jenkins container uses host.docker.internal to connect to Postgres from insi
 The local Spring Boot app uses localhost.
 
 This difference exists because localhost inside a container refers to the container itself, not the host machine.
+
+## End-to-End Ingestion Validation
+
+The Jenkins pipeline includes an end-to-end ingestion check.
+
+This stage:
+
+1. Starts the Java ingestion service.
+2. Waits for the health endpoint.
+3. Uploads `data/sample/transactions_sample.csv`.
+4. Validates the upload response.
+5. Queries the ingestion detail API.
+6. Checks accepted, rejected and reconciliation records in Postgres.
+
+The script lives at:
+
+`scripts/run-e2e-ingestion-check.sh`
+
+This proves the application, database and API work together in the pipeline.
