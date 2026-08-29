@@ -308,20 +308,69 @@ jenkins/README.md
 
 ## Current Status
 
-The project currently supports a local end-to-end ingestion workflow using Java, Postgres, SQL quality checks and Jenkins pipeline-as-code.
+This project currently implements a local end-to-end ingestion and data quality workflow.
 
-The next major stage is to introduce cloud-style data warehousing concepts using BigQuery and infrastructure-as-code with Terraform.
+Completed features include:
+
+- Spring Boot CSV ingestion API
+- row-level validation
+- accepted/rejected output generation
+- reconciliation report generation
+- Postgres audit persistence
+- ingestion query API
+- Flyway database migrations
+- SQL data quality checks
+- CI-friendly quality gate scripts
+- Jenkins pipeline-as-code
+- local Jenkins execution
+- end-to-end ingestion validation
+- initial BigQuery warehouse layer design
+
+The project is intentionally local-first and zero-cost. BigQuery and Terraform implementation are documented as future extensions.
+
+## What This Demonstrates
+
+This project demonstrates:
+
+- backend API development with Java and Spring Boot
+- database schema management with Flyway
+- operational audit design using Postgres
+- SQL-based data quality checks
+- CI/CD pipeline design with Jenkins
+- Docker-based local development
+- end-to-end validation using shell scripts
+- warehouse design using raw, curated and mart layers
+
+## Final Architecture
+
+```text
+CSV File
+   ↓
+Spring Boot Ingestion API
+   ↓
+Validation Layer
+   ↓
+Accepted / Rejected Outputs
+   ↓
+Reconciliation Report
+   ↓
+Postgres Audit Store
+   ↓
+Ingestion Query API
+   ↓
+SQL Data Quality Checks
+   ↓
+Jenkins CI Pipeline
+   ↓
+BigQuery Warehouse Design
+```
+
 
 ## Future Improvements
 
-Planned improvements include:
-
-* BigQuery raw, curated and mart datasets
-* Terraform-managed cloud resources
-* Jenkins pipeline execution in a local Jenkins server
-* automated database test setup
-* richer ingestion status endpoints
-* duplicate file detection
-* file checksum tracking
-* improved reconciliation reporting
-* dashboard-ready reporting tables
+- deploy BigQuery datasets with Terraform
+- load accepted transactions into BigQuery
+- add scheduled warehouse transformations
+- add reporting dashboards
+- add Testcontainers-based integration tests
+- add file checksum and duplicate detection
