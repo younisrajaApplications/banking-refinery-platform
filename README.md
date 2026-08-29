@@ -1,76 +1,103 @@
 # Banking Refinery Platform
 
+A local-first data ingestion, reconciliation and quality validation platform using transaction data as the example domain.
+
+The project demonstrates how raw business data can be ingested, validated, reconciled, persisted, queried and checked through a repeatable engineering workflow.
+
+Although the sample data is transaction-based, the design patterns are transferable to many domains, including retail, logistics, finance, SaaS, public sector data platforms and internal business reporting systems.
+
 ## Overview
 
-The Banking Refinery Platform is a hands-on engineering project that simulates a transaction data ingestion and quality validation platform for a banking environment.
+This project simulates a data engineering platform that processes incoming CSV files, validates each row, separates accepted and rejected records, stores ingestion metadata and runs SQL-based data quality checks.
 
-The project is designed to demonstrate how raw transaction files can be ingested, validated, reconciled, stored and checked through a repeatable engineering workflow.
+The main purpose of the project is to demonstrate practical engineering skills across backend development, database design, SQL quality checks, CI/CD and data warehouse modelling.
 
 Current capabilities include:
 
-* Java-based transaction ingestion service
-* CSV upload and row-level validation
-* Accepted and rejected transaction output files
-* Reconciliation report generation
-* Postgres persistence for ingestion audit history
-* Query API for previous ingestion runs
-* SQL-based post-ingestion data quality checks
-* CI-friendly quality gate scripts
-* Jenkins pipeline definition as code
+- Java-based ingestion service
+- CSV upload and row-level validation
+- accepted and rejected output generation
+- reconciliation report generation
+- Postgres persistence for ingestion audit history
+- query API for previous ingestion runs
+- SQL-based post-ingestion data quality checks
+- CI-friendly quality gate scripts
+- Jenkins pipeline-as-code
+- local Jenkins execution
+- end-to-end ingestion validation
+- initial BigQuery warehouse layer design
 
-## Business Problem
+## Problem Statement
 
-Banking data platforms often receive transaction data from multiple source systems. Before that data can be trusted for reporting, analytics or downstream processing, it needs to be validated and reconciled.
+Many organisations receive data from multiple source systems. Before that data can be trusted for reporting, analytics or downstream processing, it needs to be validated, reconciled and made auditable.
 
-This project solves a simplified version of that problem by taking raw transaction CSV files and applying a controlled ingestion process.
+This project solves a simplified version of that problem.
 
-The platform separates valid and invalid records, records why rows were rejected, generates reconciliation evidence and stores the ingestion outcome in Postgres for auditability.
+It takes raw CSV data, validates each record, separates valid and invalid rows, records rejection reasons, generates reconciliation evidence and persists the processing outcome to Postgres.
+
+The platform focuses on a common engineering problem:
+
+```text
+Can this data be trusted after it has been ingested?
+```
 
 ## Architecture
 
 The current platform flow is:
 
 ```text
-Raw transaction CSV
-        ↓
-Java Ingestion Service
-        ↓
+CSV File
+   ↓
+Spring Boot Ingestion API
+   ↓
 Validation Layer
-        ↓
-Accepted and Rejected Outputs
-        ↓
+   ↓
+Accepted / Rejected Outputs
+   ↓
 Reconciliation Report
-        ↓
+   ↓
 Postgres Audit Store
-        ↓
+   ↓
 Ingestion Query API
-        ↓
+   ↓
 SQL Data Quality Checks
-        ↓
+   ↓
 Jenkins CI Pipeline
+   ↓
+BigQuery Warehouse Design
 ```
 
-The Java service handles the ingestion workflow, while Postgres stores the structured audit trail. SQL checks are used after ingestion to verify that the persisted data is complete, valid and explainable.
+The Java service handles ingestion and validation.
+
+Postgres stores the operational audit trail.
+
+SQL checks verify that persisted data is complete, valid and explainable.
+
+Jenkins runs the validation workflow as a repeatable pipeline.
+
+BigQuery is designed as the future analytical warehouse layer.
 
 ## Tech Stack
 
-* Java
-* Spring Boot
-* Maven
-* Postgres
-* Flyway
-* SQL
-* Docker Compose
-* Bash
-* Jenkins
-* GitHub
+- Java
+- Spring Boot
+- Maven
+- Postgres
+- Flyway
+- SQL
+- Docker Compose
+- Bash
+- Jenkins
+- GitHub
+- BigQuery SQL
 
-Future planned additions include:
+Planned future additions:
 
-* GCP BigQuery
-* Terraform
-* Jenkins pipeline expansion
-* Raw, curated and reporting data layers
+- Terraform
+- GCP BigQuery deployment
+- automated warehouse loading
+- scheduled data transformations
+- dashboard-ready reporting marts
 
 ## Repository Structure
 
@@ -88,22 +115,28 @@ banking-refinery-platform/
 ├── jenkins/
 ├── scripts/
 ├── sql/
-│   └── postgres/
-│       └── data-quality/
+│   ├── postgres/
+│   │   └── data-quality/
+│   └── bigquery/
+│       ├── ddl/
+│       └── transformations/
 ├── terraform/
 ├── docker-compose.yml
+├── docker-compose.ci.yml
+├── docker-compose.jenkins.yml
 └── README.md
 ```
 
 ### Key folders
 
-* `app/` contains application code.
-* `data/` contains sample files, schemas and generated local outputs.
-* `docs/` contains project documentation and architecture decisions.
-* `sql/` contains Postgres data quality checks.
-* `scripts/` contains repeatable local and CI helper scripts.
-* `jenkins/` contains Jenkins-related documentation.
-* `terraform/` is reserved for future infrastructure-as-code work.
+- `app/` contains application code.
+- `data/` contains sample files, schemas and generated local outputs.
+- `docs/` contains project documentation and architecture decisions.
+- `sql/postgres/` contains Postgres data quality checks.
+- `sql/bigquery/` contains warehouse DDL and transformation SQL.
+- `scripts/` contains repeatable local and CI helper scripts.
+- `jenkins/` contains Jenkins-related documentation.
+- `terraform/` is reserved for future infrastructure-as-code work.
 
 ## Getting Started
 
@@ -169,7 +202,7 @@ Location:
 app/java-ingestion-service
 ```
 
-The Java Ingestion Service is responsible for receiving transaction data, validating records, writing accepted and rejected outputs, generating reconciliation reports and persisting ingestion results to Postgres.
+The Java Ingestion Service receives CSV data, validates each row, writes accepted and rejected outputs, generates reconciliation reports and persists ingestion results to Postgres.
 
 Current endpoints include:
 
@@ -188,12 +221,14 @@ GET  /ingestions/{id}/rejected
 
 The project uses a local Postgres database through Docker Compose.
 
-Postgres stores:
+Postgres acts as the operational audit store.
 
-* ingestion metadata
-* accepted transactions
-* rejected transactions
-* reconciliation report references
+It stores:
+
+- ingestion metadata
+- accepted records
+- rejected records
+- reconciliation report references
 
 Connect to Postgres:
 
@@ -230,13 +265,13 @@ one or more rows = investigate
 
 The checks validate:
 
-* ingestion reconciliation
-* duplicate accepted transactions
-* invalid accepted currencies
-* invalid accepted statuses
-* invalid accepted amounts
-* rejected records without reasons
-* missing reconciliation reports
+- ingestion reconciliation
+- duplicate accepted records
+- invalid currencies
+- invalid statuses
+- invalid amounts
+- rejected records without reasons
+- missing reconciliation reports
 
 ## CI-Friendly Data Quality Checks
 
@@ -261,12 +296,17 @@ This repository includes a root-level `Jenkinsfile`.
 
 The pipeline currently:
 
-* verifies required tools
-* starts Postgres using Docker Compose
-* runs Java tests
-* runs CI-friendly SQL data quality checks
-* publishes test results
-* archives Postgres logs
+- verifies required tools
+- starts a clean CI Postgres container
+- runs Flyway database migrations
+- runs Java tests
+- starts the Java service
+- uploads a sample CSV
+- validates the API response
+- checks expected records were written to Postgres
+- runs CI-friendly SQL data quality checks
+- publishes test results
+- archives logs and E2E output files
 
 The pipeline represents the project validation process as code.
 
@@ -280,13 +320,11 @@ docker compose -f docker-compose.jenkins.yml up -d --build
 
 Open Jenkins at:
 
-`http://localhost:8081`
+```text
+http://localhost:8081
+```
 
-The local Jenkins setup uses a custom Jenkins image with Docker CLI installed so the pipeline can start Postgres and run SQL quality checks.
-
-The Jenkins pipeline also includes an end-to-end ingestion validation stage.
-
-This starts the Java service, uploads the sample transaction CSV, validates the API response and checks the expected records were written to Postgres.
+The local Jenkins setup uses a custom Jenkins image with Docker CLI installed so the pipeline can start containers and run the quality checks.
 
 For more detail, see:
 
@@ -294,17 +332,65 @@ For more detail, see:
 jenkins/README.md
 ```
 
+## End-to-End Validation
+
+The project includes an end-to-end ingestion validation script:
+
+```bash
+./scripts/run-e2e-ingestion-check.sh
+```
+
+This script:
+
+1. starts the Java service
+2. waits for the health endpoint
+3. uploads the sample CSV
+4. validates the upload response
+5. queries the ingestion detail API
+6. checks accepted, rejected and reconciliation records in Postgres
+
+This proves that the API, validation layer, database persistence and query API work together.
+
+## BigQuery Warehouse Design
+
+The project includes an initial BigQuery warehouse design with three layers:
+
+```text
+raw → curated → mart
+```
+
+BigQuery SQL lives in:
+
+```text
+sql/bigquery/
+```
+
+The warehouse design separates operational ingestion tracking from analytical reporting.
+
+Postgres is used for ingestion audit history.
+
+BigQuery is designed for future analytical reporting and dashboard-ready datasets.
+
+For more detail, see:
+
+```text
+docs/warehouse-design.md
+docs/bigquery.md
+```
+
 ## Project Documentation
 
-* [Requirements](docs/requirements.md)
-* [Architecture](docs/architecture.md)
-* [Data Flow](docs/data-flow.md)
-* [Runbook](docs/runbook.md)
-* [Database](docs/database.md)
-* [Data Quality](docs/data-quality.md)
-* [ADR-001](docs/decisions/ADR-001.md)
-* [ADR-002 Repository Structure](docs/decisions/ADR-002-repository-structure.md)
-* [Raw Transaction Schema](data/schemas/transactions_raw_schema.md)
+- [Requirements](docs/requirements.md)
+- [Architecture](docs/architecture.md)
+- [Data Flow](docs/data-flow.md)
+- [Runbook](docs/runbook.md)
+- [Database](docs/database.md)
+- [Data Quality](docs/data-quality.md)
+- [Warehouse Design](docs/warehouse-design.md)
+- [BigQuery Design](docs/bigquery.md)
+- [ADR-001](docs/decisions/ADR-001.md)
+- [ADR-002 Repository Structure](docs/decisions/ADR-002-repository-structure.md)
+- [Raw Data Schema](data/schemas/transactions_raw_schema.md)
 
 ## Current Status
 
@@ -314,7 +400,7 @@ Completed features include:
 
 - Spring Boot CSV ingestion API
 - row-level validation
-- accepted/rejected output generation
+- accepted and rejected output generation
 - reconciliation report generation
 - Postgres audit persistence
 - ingestion query API
@@ -326,7 +412,9 @@ Completed features include:
 - end-to-end ingestion validation
 - initial BigQuery warehouse layer design
 
-The project is intentionally local-first and zero-cost. BigQuery and Terraform implementation are documented as future extensions.
+The project is intentionally local-first and zero-cost.
+
+BigQuery and Terraform implementation are documented as future extensions.
 
 ## What This Demonstrates
 
@@ -335,42 +423,53 @@ This project demonstrates:
 - backend API development with Java and Spring Boot
 - database schema management with Flyway
 - operational audit design using Postgres
-- SQL-based data quality checks
+- SQL-based data quality validation
 - CI/CD pipeline design with Jenkins
 - Docker-based local development
 - end-to-end validation using shell scripts
-- warehouse design using raw, curated and mart layers
+- layered warehouse design using raw, curated and mart concepts
+- separation of operational storage and analytical warehouse design
 
-## Final Architecture
+## Transferable Engineering Patterns
+
+Although the sample dataset is transaction-based, the engineering patterns are sector-neutral.
+
+The same approach could be applied to:
+
+- order ingestion
+- customer data validation
+- product catalogue feeds
+- supplier data processing
+- inventory updates
+- event logs
+- reporting extracts
+- operational data quality checks
+
+The core platform pattern is:
 
 ```text
-CSV File
-   ↓
-Spring Boot Ingestion API
-   ↓
-Validation Layer
-   ↓
-Accepted / Rejected Outputs
-   ↓
-Reconciliation Report
-   ↓
-Postgres Audit Store
-   ↓
-Ingestion Query API
-   ↓
-SQL Data Quality Checks
-   ↓
-Jenkins CI Pipeline
-   ↓
-BigQuery Warehouse Design
+ingest data
+validate data
+separate accepted and rejected records
+record rejection reasons
+persist audit metadata
+expose query APIs
+run SQL quality checks
+enforce checks through CI/CD
+design analytical warehouse layers
 ```
-
 
 ## Future Improvements
 
+Planned improvements include:
+
 - deploy BigQuery datasets with Terraform
-- load accepted transactions into BigQuery
+- load accepted records into BigQuery
 - add scheduled warehouse transformations
 - add reporting dashboards
 - add Testcontainers-based integration tests
-- add file checksum and duplicate detection
+- add file checksum tracking
+- add duplicate file detection
+- improve reconciliation reporting
+- add configurable validation rules
+- support multiple dataset types
